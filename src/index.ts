@@ -186,7 +186,6 @@ export const got = async (
             typeof data.headers["Set-Cookie"] === "object" &&
             Array.isArray(data.headers["Set-Cookie"])
           ) {
-            console.log(data.headers)
             if (options.cookieJar) {
               let promises: Array<Promise<unknown>> = data.headers[
                 "Set-Cookie"
