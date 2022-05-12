@@ -7,7 +7,7 @@
     "/dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -R ./src/resources ./dist/resources",
     "start": "ts-node src/index.ts",
     "test": "jest"
   },
