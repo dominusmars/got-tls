@@ -44,7 +44,7 @@ var child_process_1 = require("child_process");
 var path_1 = require("path");
 var pubsub_js_1 = __importDefault(require("pubsub-js"));
 var get_port_1 = __importDefault(require("get-port"));
-var W3CWebSocket = require("websocket").w3cwebsocket;
+var WebSocket = require("ws");
 var child;
 var cleanExit = function (message) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -88,9 +88,9 @@ var connectToServer = function () { return __awaiter(void 0, void 0, void 0, fun
                 return [4 /*yield*/, sleep(500)];
             case 1:
                 _a.sent();
-                exports.BACKEND = new W3CWebSocket("ws://localhost:" + PORT + "/client");
+                exports.BACKEND = new WebSocket("ws://localhost:" + PORT + "/client");
                 exports.BACKEND.onopen = function () {
-                    console.log('Successfully Connnected To Backend Proxy');
+                    console.log("Successfully Connnected To Backend Proxy");
                     exports.CONNECTED = true;
                 };
                 exports.BACKEND.onmessage = function (e) {
@@ -100,12 +100,12 @@ var connectToServer = function () { return __awaiter(void 0, void 0, void 0, fun
                     }
                 };
                 exports.BACKEND.onclose = function () {
-                    console.log('Backend Proxy Client Closed Error! Retrying Connection...');
+                    console.log("Backend Proxy Client Closed Error! Retrying Connection...");
                     exports.CONNECTED = false;
                     connectToServer();
                 };
                 exports.BACKEND.onerror = function () {
-                    console.log('Backend Proxy Connection Error! Retrying Connection...');
+                    console.log("Backend Proxy Connection Error! Retrying Connection...");
                     exports.CONNECTED = false;
                     // connectToServer()
                 };
@@ -126,7 +126,7 @@ var startServer = function () { return __awaiter(void 0, void 0, void 0, functio
                 return [4 /*yield*/, (0, get_port_1.default)()];
             case 1:
                 PORT = _a.sent();
-                console.log('Starting Server...');
+                console.log("Starting Server...");
                 executableFilename = "";
                 if (process.platform == "win32") {
                     executableFilename = "got-tls-proxy.exe";

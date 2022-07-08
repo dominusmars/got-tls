@@ -1,56 +1,57 @@
 {
-  "name": "got-tls",
-  "version": "1.0.6",
-  "description": "A node websocket api version of https://github.com/Carcraftz/TLS-Fingerprint-API to spoof TLS fingerprint to prevent your requests from being fingerprinted. \r > im fairly new to golang / websockets pull requests are welcome",
-  "main": "dist/index.js",
-  "files": [
-    "/dist"
-  ],
-  "scripts": {
-    "build": "tsc && cp -R ./src/resources ./dist/resources",
-    "start": "ts-node src/index.ts",
-    "test": "jest"
-  },
-  "keywords": [
-    "tls",
-    "utls",
-    "ja3",
-    "antibot",
-    "fingerprint",
-    "spoof",
-    "bot",
-    "sneakers"
-  ],
-  "repository": "evade99/got-tls",
-  "homepage": "https://github.com/evade99/got-tls#readme",
-  "bugs": {
-    "url": "https://github.com/evade99/got-tls/issues"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "@types/jest": "^27.0.2",
-    "@types/node": "^16.10.1",
-    "@types/pubsub-js": "^1.8.3",
-    "husky": "^7.0.2",
-    "jest": "^27.2.4",
-    "prettier": "^2.4.1",
-    "pretty-quick": "^3.1.1",
-    "ts-jest": "^27.0.5",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.3"
-  },
-  "dependencies": {
-    "@types/tough-cookie": "^4.0.1",
-    "form-data-encoder": "^1.6.0",
-    "get-port": "^5.1.1",
-    "pubsub-js": "^1.9.3",
-    "tough-cookie": "^4.0.0",
-    "uuid": "^8.3.2",
-    "uuidv4": "^6.2.12",
-    "websocket": "^1.0.34"
-  },
-  "directories": {
-    "test": "tests"
-  },
-  "author": "evade99"
+	"name": "got-tls",
+	"version": "1.0.6",
+	"description": "A node websocket api version of https://github.com/Carcraftz/TLS-Fingerprint-API to spoof TLS fingerprint to prevent your requests from being fingerprinted. \r > im fairly new to golang / websockets pull requests are welcome",
+	"main": "dist/index.js",
+	"files": [
+		"/dist"
+	],
+	"scripts": {
+		"build": "tsc && cp -R ./src/resources ./dist/resources",
+		"build_win": "tsc&& Xcopy /E /I .\\src\\resources .\\dist\\resources",
+		"start": "ts-node src/index.ts",
+		"test": "jest"
+	},
+	"keywords": [
+		"tls",
+		"utls",
+		"ja3",
+		"antibot",
+		"fingerprint",
+		"spoof",
+		"bot",
+		"sneakers"
+	],
+	"repository": "evade99/got-tls",
+	"homepage": "https://github.com/evade99/got-tls#readme",
+	"bugs": {
+		"url": "https://github.com/evade99/got-tls/issues"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"@types/jest": "^27.0.2",
+		"@types/node": "^16.10.1",
+		"@types/pubsub-js": "^1.8.3",
+		"husky": "^7.0.2",
+		"jest": "^27.2.4",
+		"prettier": "^2.4.1",
+		"pretty-quick": "^3.1.1",
+		"ts-jest": "^27.0.5",
+		"ts-node": "^10.2.1",
+		"typescript": "^4.4.3"
+	},
+	"dependencies": {
+		"@types/tough-cookie": "^4.0.1",
+		"form-data-encoder": "^1.6.0",
+		"get-port": "^5.1.1",
+		"pubsub-js": "^1.9.3",
+		"tough-cookie": "^4.0.0",
+		"uuid": "^8.3.2",
+		"uuidv4": "^6.2.12",
+		"websocket": "^1.0.34"
+	},
+	"directories": {
+		"test": "tests"
+	},
+	"author": "evade99"
 }
