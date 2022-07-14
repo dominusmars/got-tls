@@ -19,6 +19,7 @@ const headers = {
 
 test("Should Start And Connect To Proxy Client", async () => {
   var connected = await Server.connect();
+  console.log(connected)
   expect(connected).toEqual(true);
 });
 test('Should receive JSON request from JAS3', async ()=>{
@@ -34,6 +35,9 @@ test('Should receive JSON request from JAS3', async ()=>{
   expect(request.success).toEqual(true)
 })
 test('should receive Nike.com', async()=>{
+  if(!Server.isConnected()){
+    throw new Error()
+  }
   var configs = {
     headers:headers,
     debug: true

@@ -1,8 +1,9 @@
-import { spawn, exec, ChildProcessWithoutNullStreams, ChildProcess } from "child_process";
+import { spawn, exec, ChildProcessWithoutNullStreams, ChildProcess, execFile } from "child_process";
 import type { ResponseData } from "../interface";
 import { join } from "path";
 import PubSub from "pubsub-js";
 import getPort from "get-port";
+import { chmodSync } from "fs";
 const WebSocket = require("ws");
 
 let child: ChildProcess;
@@ -79,7 +80,7 @@ interface StringMap { [key: string]: string; }
 
 var executables: StringMap = {
 	'darwin': 'got-tls-proxy',
-	'linux': "got-tls-proxy-linux",
+	'linux': 'got-tls-proxy-linux',
 	'win32': 'got-tls-proxy.exe',
 }
 export const startServer = async () => {
@@ -93,13 +94,32 @@ export const startServer = async () => {
 		if(!executableFilename){
 			throw new Error("Operating system not supported");
 		}
-
-		child = spawn(join(__dirname, `../resources/${executableFilename}`), {
-			env: { PROXY_PORT: PORT.toString() },
-			shell: true,
+		if(process.platform == 'linux'){
+			child = spawn(join(__dirname, `../resources/${executableFilename}`),{
+				env: { PROXY_PORT: PORT.toString() },
 			stdio:['inherit','inherit','inherit', 'ipc'],
 			windowsHide: true,
-		});
+			})
+		} else{
+			child = spawn(join(__dirname, `../resources/${executableFilename}`), {
+				env: { PROXY_PORT: PORT.toString() },
+				shell: true,
+				stdio:['inherit','inherit','inherit', 'ipc'],
+				windowsHide: true,
+			});
+		}
+		child.on('spawn', ()=>{
+			console.log("Proxy Server Started")
+		})
+		child.on('error',(message)=>{
+			if(message.message.includes("EACCES")){
+				chmodSync(join(__dirname, `../resources/${executableFilename}`),0o777)
+				startServer()
+			}
+		})
+		child.on('close', ()=>{
+			console.log("Proxy server Closed")
+		})
 		return new Promise((resolve, rejects)=>{
 			connectToServer((success: Boolean)=>{
 				success ? resolve(success) : rejects(success)
@@ -108,7 +128,7 @@ export const startServer = async () => {
 		
 	} catch (e) {
 		console.log(e);
-		return false
+		return e
 	}
 };
 
