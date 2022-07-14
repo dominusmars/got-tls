@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sleep = exports.getBaseUrl = exports.startServer = exports.CONNECTED = exports.BACKEND = void 0;
+exports.sleep = exports.getBaseUrl = exports.startServer = exports.isConnected = exports.BACKEND = void 0;
 var child_process_1 = require("child_process");
 var path_1 = require("path");
 var pubsub_js_1 = __importDefault(require("pubsub-js"));
@@ -78,8 +78,12 @@ var cleanExit = function (message) { return __awaiter(void 0, void 0, void 0, fu
 process.on("SIGINT", function () { return cleanExit(); });
 process.on("SIGTERM", function () { return cleanExit(); });
 var PORT;
-exports.CONNECTED = false;
-var connectToServer = function () { return __awaiter(void 0, void 0, void 0, function () {
+var CONNECTED = false;
+var isConnected = function () {
+    return CONNECTED;
+};
+exports.isConnected = isConnected;
+var connectToServer = function (callback) { return __awaiter(void 0, void 0, void 0, function () {
     var e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -91,7 +95,8 @@ var connectToServer = function () { return __awaiter(void 0, void 0, void 0, fun
                 exports.BACKEND = new WebSocket("ws://localhost:" + PORT + "/client");
                 exports.BACKEND.onopen = function () {
                     console.log("Successfully Connnected To Backend Proxy");
-                    exports.CONNECTED = true;
+                    CONNECTED = true;
+                    callback(true, exports.BACKEND);
                 };
                 exports.BACKEND.onmessage = function (e) {
                     if (typeof e.data === "string") {
@@ -101,60 +106,57 @@ var connectToServer = function () { return __awaiter(void 0, void 0, void 0, fun
                 };
                 exports.BACKEND.onclose = function () {
                     console.log("Backend Proxy Client Closed Error! Retrying Connection...");
-                    exports.CONNECTED = false;
-                    connectToServer();
+                    CONNECTED = false;
+                    connectToServer(function () { });
                 };
                 exports.BACKEND.onerror = function () {
                     console.log("Backend Proxy Connection Error! Retrying Connection...");
-                    exports.CONNECTED = false;
+                    CONNECTED = false;
                     // connectToServer()
                 };
                 return [3 /*break*/, 3];
             case 2:
                 e_1 = _a.sent();
-                return [3 /*break*/, 3];
+                return [2 /*return*/, callback(false)];
             case 3: return [2 /*return*/];
         }
     });
 }); };
+var executables = {
+    'darwin': 'got-tls-proxy',
+    'linux': "got-tls-proxy-linux",
+    'win32': 'got-tls-proxy.exe',
+};
 var startServer = function () { return __awaiter(void 0, void 0, void 0, function () {
     var executableFilename, e_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 3, , 4]);
+                _a.trys.push([0, 2, , 3]);
                 return [4 /*yield*/, (0, get_port_1.default)()];
             case 1:
                 PORT = _a.sent();
                 console.log("Starting Server...");
-                executableFilename = "";
-                if (process.platform == "win32") {
-                    executableFilename = "got-tls-proxy.exe";
-                }
-                else if (process.platform == "linux") {
-                    executableFilename = "got-tls-proxy-linux";
-                }
-                else if (process.platform == "darwin") {
-                    executableFilename = "got-tls-proxy";
-                }
-                else {
+                executableFilename = executables[process.platform];
+                if (!executableFilename) {
                     throw new Error("Operating system not supported");
                 }
                 child = (0, child_process_1.spawn)((0, path_1.join)(__dirname, "../resources/" + executableFilename), {
                     env: { PROXY_PORT: PORT.toString() },
                     shell: true,
+                    stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
                     windowsHide: true,
-                    detached: process.platform !== "win32",
                 });
-                return [4 /*yield*/, connectToServer()];
+                return [2 /*return*/, new Promise(function (resolve, rejects) {
+                        connectToServer(function (success) {
+                            success ? resolve(success) : rejects(success);
+                        });
+                    })];
             case 2:
-                _a.sent();
-                return [3 /*break*/, 4];
-            case 3:
                 e_2 = _a.sent();
                 console.log(e_2);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [2 /*return*/, false];
+            case 3: return [2 /*return*/];
         }
     });
 }); };

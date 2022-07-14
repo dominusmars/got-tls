@@ -48,6 +48,7 @@ var pubsub_js_1 = __importDefault(require("pubsub-js"));
 var url_1 = require("url");
 exports.Server = {
     connect: main_1.startServer,
+    isConnected: main_1.isConnected
 };
 var validMethods = [
     "GET",
@@ -84,7 +85,7 @@ var got = function (method, url, options, responseEmitter, redirects) {
                     timeWaited = 0;
                     _a.label = 1;
                 case 1:
-                    if (!!main_1.CONNECTED) return [3 /*break*/, 3];
+                    if (!!(0, main_1.isConnected)()) return [3 /*break*/, 3];
                     return [4 /*yield*/, (0, main_1.sleep)(100)];
                 case 2:
                     (_a.sent()) && (timeWaited += 100);

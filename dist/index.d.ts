@@ -1,7 +1,8 @@
 import type { RequestOptions, ResponseData } from "./interface";
 import { EventEmitter } from "events";
 export declare const Server: {
-    connect: () => Promise<void>;
+    connect: () => Promise<unknown>;
+    isConnected: () => boolean;
 };
 export declare const got: {
     (method: string, url: string, options: RequestOptions, responseEmitter?: EventEmitter | null, redirects?: number): Promise<ResponseData>;

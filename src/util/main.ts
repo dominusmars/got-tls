@@ -1,11 +1,11 @@
-import { spawn, exec, ChildProcessWithoutNullStreams } from "child_process";
+import { spawn, exec, ChildProcessWithoutNullStreams, ChildProcess } from "child_process";
 import type { ResponseData } from "../interface";
 import { join } from "path";
 import PubSub from "pubsub-js";
 import getPort from "get-port";
 const WebSocket = require("ws");
 
-let child: ChildProcessWithoutNullStreams;
+let child: ChildProcess;
 
 const cleanExit = async (message?: string | Error) => {
 	if (!child) return;
@@ -36,21 +36,22 @@ process.on("SIGINT", () => cleanExit());
 
 process.on("SIGTERM", () => cleanExit());
 
-export let BACKEND: any;
+export let BACKEND: WebSocket;
 let PORT: number;
-export let CONNECTED = false;
-
-const connectToServer = async () => {
+let CONNECTED = false;
+export let isConnected = ()=>{
+	return CONNECTED
+}
+const connectToServer  = async (callback: Function) => {
 	try {
 		await sleep(500);
 
 		BACKEND = new WebSocket(`ws://localhost:${PORT}/client`);
-
 		BACKEND.onopen = function () {
 			console.log("Successfully Connnected To Backend Proxy");
 			CONNECTED = true;
+			callback(true, BACKEND)
 		};
-
 		BACKEND.onmessage = function (e: any) {
 			if (typeof e.data === "string") {
 				let responseData: ResponseData = JSON.parse(e.data);
@@ -61,7 +62,7 @@ const connectToServer = async () => {
 		BACKEND.onclose = function () {
 			console.log("Backend Proxy Client Closed Error! Retrying Connection...");
 			CONNECTED = false;
-			connectToServer();
+			connectToServer(()=>{});
 		};
 
 		BACKEND.onerror = function () {
@@ -69,36 +70,45 @@ const connectToServer = async () => {
 			CONNECTED = false;
 			// connectToServer()
 		};
-	} catch (e) {}
-};
 
+	} catch (e) {
+		return callback(false)
+	}
+};
+interface StringMap { [key: string]: string; }
+
+var executables: StringMap = {
+	'darwin': 'got-tls-proxy',
+	'linux': "got-tls-proxy-linux",
+	'win32': 'got-tls-proxy.exe',
+}
 export const startServer = async () => {
 	try {
 		PORT = await getPort();
 
 		console.log("Starting Server...");
-
-		let executableFilename = "";
-		if (process.platform == "win32") {
-			executableFilename = "got-tls-proxy.exe";
-		} else if (process.platform == "linux") {
-			executableFilename = "got-tls-proxy-linux";
-		} else if (process.platform == "darwin") {
-			executableFilename = "got-tls-proxy";
-		} else {
+		
+		let executableFilename = executables[process.platform]
+		
+		if(!executableFilename){
 			throw new Error("Operating system not supported");
 		}
 
 		child = spawn(join(__dirname, `../resources/${executableFilename}`), {
 			env: { PROXY_PORT: PORT.toString() },
 			shell: true,
+			stdio:['inherit','inherit','inherit', 'ipc'],
 			windowsHide: true,
-			detached: process.platform !== "win32",
 		});
-
-		await connectToServer();
+		return new Promise((resolve, rejects)=>{
+			connectToServer((success: Boolean)=>{
+				success ? resolve(success) : rejects(success)
+			});
+		})
+		
 	} catch (e) {
 		console.log(e);
+		return false
 	}
 };
 

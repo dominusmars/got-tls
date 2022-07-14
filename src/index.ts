@@ -1,4 +1,4 @@
-import { sleep, getBaseUrl, startServer, CONNECTED, BACKEND } from "./util/main";
+import { sleep, getBaseUrl, startServer, isConnected, BACKEND } from "./util/main";
 import type {
   RequestOptions,
   ResponseData,
@@ -13,6 +13,7 @@ import { URLSearchParams } from "url";
 
 export const Server = {
   connect: startServer,
+  isConnected: isConnected
 };
 
 const validMethods = [
@@ -62,7 +63,7 @@ export const got = async (
 
   let timeWaited = 0;
 
-  while (!CONNECTED) {
+  while (!isConnected()) {
     (await sleep(100)) && (timeWaited += 100);
     if (timeWaited > 10000) {
       responseEmitter.emit("error", `Proxy Client Took Too Long To Connect!`);
