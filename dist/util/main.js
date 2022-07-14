@@ -44,6 +44,7 @@ var child_process_1 = require("child_process");
 var path_1 = require("path");
 var pubsub_js_1 = __importDefault(require("pubsub-js"));
 var get_port_1 = __importDefault(require("get-port"));
+var fs_1 = require("fs");
 var WebSocket = require("ws");
 var child;
 var cleanExit = function (message) { return __awaiter(void 0, void 0, void 0, function () {
@@ -124,11 +125,11 @@ var connectToServer = function (callback) { return __awaiter(void 0, void 0, voi
 }); };
 var executables = {
     'darwin': 'got-tls-proxy',
-    'linux': "got-tls-proxy-linux",
+    'linux': 'got-tls-proxy-linux',
     'win32': 'got-tls-proxy.exe',
 };
 var startServer = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var executableFilename, e_2;
+    var executableFilename_1, e_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -137,15 +138,36 @@ var startServer = function () { return __awaiter(void 0, void 0, void 0, functio
             case 1:
                 PORT = _a.sent();
                 console.log("Starting Server...");
-                executableFilename = executables[process.platform];
-                if (!executableFilename) {
+                executableFilename_1 = executables[process.platform];
+                if (!executableFilename_1) {
                     throw new Error("Operating system not supported");
                 }
-                child = (0, child_process_1.spawn)((0, path_1.join)(__dirname, "../resources/" + executableFilename), {
-                    env: { PROXY_PORT: PORT.toString() },
-                    shell: true,
-                    stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-                    windowsHide: true,
+                if (process.platform == 'linux') {
+                    child = (0, child_process_1.spawn)((0, path_1.join)(__dirname, "../resources/" + executableFilename_1), {
+                        env: { PROXY_PORT: PORT.toString() },
+                        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+                        windowsHide: true,
+                    });
+                }
+                else {
+                    child = (0, child_process_1.spawn)((0, path_1.join)(__dirname, "../resources/" + executableFilename_1), {
+                        env: { PROXY_PORT: PORT.toString() },
+                        shell: true,
+                        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+                        windowsHide: true,
+                    });
+                }
+                child.on('spawn', function () {
+                    console.log("Proxy Server Started");
+                });
+                child.on('error', function (message) {
+                    if (message.message.includes("EACCES")) {
+                        (0, fs_1.chmodSync)((0, path_1.join)(__dirname, "../resources/" + executableFilename_1), 511);
+                        (0, exports.startServer)();
+                    }
+                });
+                child.on('close', function () {
+                    console.log("Proxy server Closed");
                 });
                 return [2 /*return*/, new Promise(function (resolve, rejects) {
                         connectToServer(function (success) {
@@ -155,7 +177,7 @@ var startServer = function () { return __awaiter(void 0, void 0, void 0, functio
             case 2:
                 e_2 = _a.sent();
                 console.log(e_2);
-                return [2 /*return*/, false];
+                return [2 /*return*/, e_2];
             case 3: return [2 /*return*/];
         }
     });
